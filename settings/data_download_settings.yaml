@@ -1,0 +1,237 @@
+# General settings
+output_dir: '../work/'
+logger_name: 'data_download_logger'
+log_file: 'fews_data_download.log'
+log_xml_file: 'fews_data_download_log.xml'
+xml_log: True
+
+
+# Run info settings
+run_info_file: '../work/fews_data_download_run_info.xml'
+
+# Data download settings
+fews_name_space: "http://www.wldelft.nl/fews/PI"
+max_num_threads: 10
+
+# ECCC NWP Settings
+ECCC_NWP:
+  HRDPS:
+    model: HRDPS
+    url_base: 'https://dd.weather.gc.ca/model_hrdps/continental/2.5km/'
+    timestep: 1
+    interval: 6
+    lead_time: 48
+    delay: 6
+    parameter: 
+    - APCP_Sfc
+    - TMP_AGL-2m
+    - PRES_Sfc
+    - DSWRF_Sfc
+    - DSWRF_NTAT
+    first_lead_time: # must correspond with parameters
+    - 1 
+    - 0 
+    - 0
+    - 1
+    - 1
+
+  RDPS: 
+  #Doc: https://eccc-msc.github.io/open-data/msc-data/nwp_rdps/readme_rdps-datamart_en/
+  #Data Source: https://dd.weather.gc.ca/model_gem_regional/10km
+    model: RDPS
+    url_base: 'https://dd.weather.gc.ca/model_gem_regional/10km/grib2/'
+    timestep: 1
+    interval: 6
+    lead_time: 48
+    delay: 6
+    parameter:
+    - APCP_SFC_0
+    - TMP_TGL_2
+    - PRES_SFC_0
+    - DSWRF_SFC_0
+    - DSWRF_NTAT_0
+    first_lead_time: # must correspond with parameters
+    - 1 
+    - 0 
+    - 0
+    - 1
+    - 1
+
+  GDPS:
+  # Doc: https://eccc-msc.github.io/open-data/msc-data/nwp_gdps/readme_gdps-datamart_en/
+  # Data Source:
+    model: GDPS
+    url_base: 'https://dd.weather.gc.ca/model_gem_global/15km/grib2/lat_lon/'
+    timestep: 3
+    interval: 12
+    lead_time: 240
+    delay: 12
+    first_lead_time: 3
+    parameter:
+    - APCP_SFC_0
+    - TMP_TGL_2
+    - PRES_SFC_0
+    - DSWRF_SFC_0
+    - DSWRF_NTAT_0
+    first_lead_time: # must correspond with parameters
+    - 3 
+    - 0 
+    - 0
+    - 3
+    - 3
+
+  REPS:
+    # Doc: https://eccc-msc.github.io/open-data/msc-data/
+    # Data Source:
+    model: REPS
+    url_base: 'https://dd.weather.gc.ca/ensemble/reps/10km/grib2/'
+    timestep: 3
+    interval: 6
+    lead_time: 72
+    delay: 12
+    first_lead_time: 3
+    parameter:
+    - APCP_SFC
+    - TMP_AGL-2m
+    #- PRES_SFC_0
+    #- DSWRF_SFC_0
+    #- DSWRF_NTAT_0
+    first_lead_time: # must correspond with parameters
+    - 3 
+    - 0 
+    #- 0
+    #- 3
+    #- 3
+
+  GEPS:
+    # Doc: https://eccc-msc.github.io/open-data/msc-data/
+    # Data Source:
+    model: GEPS
+    url_base: 'https://dd.weather.gc.ca/ensemble/geps/grib2/raw/'
+    timestep: 3
+    interval: 12
+    lead_time: 240
+    delay: 12
+    first_lead_time: 3
+    parameter:
+    - APCP_SFC_0
+    - TMP_TGL_2m
+    #- PRES_SFC_0
+    #- DSWRF_SFC_0
+    #- DSWRF_NTAT_0
+    first_lead_time: # must correspond with parameters
+    - 3 
+    - 0 
+    #- 0
+    #- 3
+    #- 3
+
+ECCC_PRECIP_GRID:
+  HRDPA:
+    model: HRDPA
+    url_base: 'http://dd.weather.gc.ca/analysis/precip/hrdpa/grib2/polar_stereographic/06/'
+    parameters: '_SFC_0'
+    num_days_back: 7
+    delay_hours: 6
+    hour_list:
+      - '00'
+      - '06'
+      - '12'
+      - '18'
+  RDPA:
+    model: RDPA
+    url_base: 'http://dd.weather.gc.ca/analysis/precip/rdpa/grib2/polar_stereographic/06/'
+    parameters: '_SFC_0'
+    num_days_back: 7
+    delay_hours: 6
+    hour_list:
+      - '00'
+      - '06'
+      - '12'
+      - '18'
+
+ECCC_RADAR:
+  url_base: https://hpfx.collab.science.gc.ca/
+  username: To_Be_Added
+  password: To_Be_Added
+  qualifier: CMHR
+  data_type: composite
+  delay_minutes: 10
+  timestep_minutes: 6
+  search_period_hours: 3
+
+SNOWCAST:
+  url_base: http://www.snowcast.ca/v2/asc/
+  delay_hours: 6
+
+SNODAS:
+# SNODAS Settings
+  url_base: 'https://www.nohrsc.noaa.gov/products/collaborators/'
+  num_days_back: 28
+  parameters:
+    - zz_ssmv11034tS__T0001TTNATS #SWE
+    - zz_ssmv11036tS__T0001TTNATS #Snow Depth
+    - zz_ssmv11038wS__A0006TTNATS #Snow Pack Average Temp
+    - zz_ssmv11044bS__T0006TTNATS #Snow Melt
+  file_suffixes:
+   - 05HP001
+   - 05HP001
+   - 05HP001
+   - 05HP000
+
+GLOBSNOW:
+  url_base: 'http://www.globsnow.info/swe/nrt/'
+  parameter: 'SWE'
+  num_days_back: 3
+  delay_hours: 6
+
+ERA5:
+  num_days_back: 75
+  delay_days: 3
+  grid: '0.25/0.25'
+  variables_surface_level:
+    - 'mean_total_precipitation_rate'
+    - 'mean_surface_downward_long_wave_radiation_flux'
+    - 'mean_surface_downward_short_wave_radiation_flux'
+    - 'surface_pressure'
+    - '2m_temperature'
+    - 'mean_sea_level_pressure'
+    - 'potential_evaporation'
+    - 'surface_solar_radiation_downwards'
+    - 'toa_incident_solar_radiation'
+    - 'total_precipitation'
+  hours:
+    - '00:00'
+    - '01:00'
+    - '02:00'
+    - '03:00'
+    - '04:00'
+    - '05:00'
+    - '06:00'
+    - '07:00'
+    - '08:00'
+    - '09:00'
+    - '10:00'
+    - '11:00'
+    - '12:00'
+    - '13:00'
+    - '14:00'
+    - '15:00'
+    - '16:00'
+    - '17:00'
+    - '18:00'
+    - '19:00'
+    - '20:00'
+    - '21:00'
+    - '22:00'
+    - '23:00'
+
+# Bounding Box
+bounding_box:
+  - 52   #lat_max
+  - -117 #lon_min
+  - 50   #lat_min
+  - -113 #lon_max
+
+
+
