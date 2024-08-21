@@ -22,10 +22,11 @@ from pprint import pprint
 import get_eccc_nwp
 import get_eccc_gridded_precip
 import get_eccc_radar
+import get_eccc_api
 import get_snowcast
 import get_snodas
 import get_era5
-
+import get_snotel
 # Note import get_globsnow is done in download_data function, to avoid unneeded netCDF4 dependency
 
 # Import local utility scripts
@@ -63,7 +64,7 @@ def download_data(data_source, cmd_dict, model=None):
     logger.debug(f'Running with following settings')
     logger.debug(pprint(cmd_dict))
     if data_source == 'ECCC_NWP':
-        logger.info('Reading ECCC NWP download commands')
+        logger.info('Reading ECCC NWP download commands') 
         download_threads = get_eccc_nwp.build_threads(cmd_dict, data_source='ECCC_NWP', model=model)
         run_download_threads(download_threads)
 
@@ -97,6 +98,15 @@ def download_data(data_source, cmd_dict, model=None):
     elif data_source == 'ERA5':
         logger.info('Reading ERA5 download commands')
         get_era5.download_era5(cmd_dict)
+    
+    elif data_source == 'ECCC_API':
+        logger.info('Reading ECCC download commands')
+        get_eccc_api.download_from_eccc_api(cmd_dict,model)
+
+    elif data_source == 'SNOTEL':
+        logger.info('Reading SNOTEL download commands')
+        download_threads = get_snotel.build_threads(cmd_dict,data_source)
+        run_download_threads(download_threads)
     else:
         raise ValueError(f"Unknown data source: {data_source}")
     
@@ -171,12 +181,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     #Testing block - set arguments below to test the script
-    # NOTE: Be sure to comment again once complete testing!
+    #NOTE: Be sure to comment again once complete testing!
 
-    args.data_source = 'ECCC_NWP'
+    #args.data_source = 'ECCC_NWP'
     
     # Model setting only needed for ECCC_NWP
-    #args.model = 'HRDPS'
+    #args.model = 'GDPS'
 
     # Call mainscript with the parsed arguments
     mainscript(args.run_info_file, args.data_source, args.use_default_settings, args.model)

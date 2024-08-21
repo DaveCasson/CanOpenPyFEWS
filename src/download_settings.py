@@ -11,7 +11,7 @@ Principally reading default settings from a yaml file, and setting file paths.
 import os
 import yaml
 
-def read_download_settings(download_settings_file='..\settings\data_download_settings.yaml'):
+def read_download_settings(download_settings_file='.\data_download_settings.yaml'):
     """Function to read download settings from yaml file"""
 
     dir_path = os.path.dirname(os.path.realpath(__file__))

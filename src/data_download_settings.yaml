@@ -15,8 +15,8 @@ max_num_threads: 10
 
 # ECCC API Settings
 ECCC_API:
-  url_base: https://api.weather.gc.ca/
-  limit: 100
+  url_base: https://api.weather.gc.ca/collections
+  limit: 100000
   station_csv: ECCC_API_Stations.csv
   hydrometric-realtime:
     collection: hydrometric-realtime
@@ -82,19 +82,25 @@ ECCC_NWP:
     url_base: 'https://dd.weather.gc.ca/model_gem_global/15km/grib2/lat_lon/'
     timestep: 3
     interval: 12
-    lead_time: 240
+    lead_time: 168
     delay: 12
     first_lead_time: 3
     parameter:
     - APCP_SFC_0
     - TMP_TGL_2
+    - SPFH_ISBL_50
+    - WIND_TGL_40
     - PRES_SFC_0
     - DSWRF_SFC_0
+    - DLWRF_SFC_0
     - DSWRF_NTAT_0
     first_lead_time: # must correspond with parameters
     - 3 
     - 0 
     - 0
+    - 0
+    - 3
+    - 3
     - 3
     - 3
 
@@ -128,21 +134,26 @@ ECCC_NWP:
     url_base: 'https://dd.weather.gc.ca/ensemble/geps/grib2/raw/'
     timestep: 3
     interval: 12
-    lead_time: 240
+    lead_time: 168
     delay: 12
     first_lead_time: 3
     parameter:
     - APCP_SFC_0
     - TMP_TGL_2m
-    #- PRES_SFC_0
-    #- DSWRF_SFC_0
-    #- DSWRF_NTAT_0
+    - SPFH_TGL_2
+    - WIND_TGL_10
+    - PRES_SFC_0
+    - DSWRF_SFC_0
+    - DLWRF_SFC_0
     first_lead_time: # must correspond with parameters
     - 3 
     - 0 
-    #- 0
-    #- 3
-    #- 3
+    - 0
+    - 0
+    - 3
+    - 3
+    - 3
+    - 3
 
 ECCC_PRECIP_GRID:
   HRDPA:
@@ -170,8 +181,8 @@ ECCC_PRECIP_GRID:
 
 ECCC_RADAR:
   url_base: https://hpfx.collab.science.gc.ca/
-  username: To_Be_Added
-  password: To_Be_Added
+  username: tobeadded
+  password: tobeadded
   qualifier: CMHR
   data_type: composite
   delay_minutes: 10
@@ -203,8 +214,12 @@ GLOBSNOW:
   num_days_back: 3
   delay_hours: 6
 
+SNOTEL:
+  url_base: 'https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customSingleStationReport/daily/'
+  station_csv: SNOTELStations.csv
+
 ERA5:
-  num_days_back: 75
+  num_days_back: 10
   delay_days: 3
   grid: '0.25/0.25'
   variables_surface_level:
@@ -246,10 +261,8 @@ ERA5:
 
 # Bounding Box
 bounding_box:
-  - 52   #lat_max
-  - -117 #lon_min
-  - 50   #lat_min
-  - -113 #lon_max
-
-
+  - 70   #lat_max
+  - -165 #lon_min
+  - 58   #lat_min
+  - -128 #lon_max
 
