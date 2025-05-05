@@ -1,0 +1,6 @@
+This is wgrib2 v3.1.3rc2 10/22/2023
+  compiled very slowly on an intel apollo lake n3450 quad core laptop
+  using the cygwin gnu compilers running on Windows 10.
+  has AEC and OpenJPEG
+
+wgrib v3.1.3rc2 is the same as v3.1.3 except for the version number

@@ -1,8 +1,7 @@
 
 """
 
-Get Environment and Climate Change Canada - Re-analysis Precipitation Data
-https://eccc-msc.github.io/open-data/readme_en/
+Get SNOTEL
 
 TO DO: Expand documentation
 

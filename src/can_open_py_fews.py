@@ -1,8 +1,5 @@
 """
-
-CanOpenPyFEWS
-
-Data Access and Download for Operational Hydrological Forecasting
+Data Download for Operational Hydrological Forecasting
 
 This script provides functionality to download various types of hydrological data
 from multiple sources. It supports downloading and processing data from services
@@ -10,7 +7,6 @@ such as ECCC NWP, ECCC Reanalysis Precipitation, ECCC Radar, SNOWCAST, GLOBSNOW,
 
 The script utilizes external modules for specific download and processing tasks,
 and logs its operations for better traceability and debugging.
-
 
 """
 
@@ -22,12 +18,13 @@ from pprint import pprint
 import get_eccc_nwp
 import get_eccc_gridded_precip
 import get_eccc_radar
-import get_eccc_api
 import get_snowcast
+import get_eccc_api
+import get_snotel
+import get_globsnow
 import get_snodas
 import get_era5
-import get_snotel
-# Note import get_globsnow is done in download_data function, to avoid unneeded netCDF4 dependency
+import get_ecmwf_nwp
 
 # Import local utility scripts
 from get_run_info_utils import read_cmd_line, add_run_info_to_cmd_dict, read_default_arguments
@@ -64,7 +61,7 @@ def download_data(data_source, cmd_dict, model=None):
     logger.debug(f'Running with following settings')
     logger.debug(pprint(cmd_dict))
     if data_source == 'ECCC_NWP':
-        logger.info('Reading ECCC NWP download commands') 
+        logger.info('Reading ECCC NWP download commands')
         download_threads = get_eccc_nwp.build_threads(cmd_dict, data_source='ECCC_NWP', model=model)
         run_download_threads(download_threads)
 
@@ -84,7 +81,6 @@ def download_data(data_source, cmd_dict, model=None):
         run_download_threads(download_threads)
     
     elif data_source == 'GLOBSNOW':
-        import get_globsnow
         logger.info('Reading GLOBSNOW download commands')
         download_threads, download_dates,filenames = get_globsnow.build_threads(cmd_dict)
         run_download_threads(download_threads)
@@ -95,20 +91,32 @@ def download_data(data_source, cmd_dict, model=None):
         download_threads = get_snodas.build_threads(cmd_dict)
         run_download_threads(download_threads)
 
-    elif data_source == 'ERA5':
-        logger.info('Reading ERA5 download commands')
-        get_era5.download_era5(cmd_dict)
-    
     elif data_source == 'ECCC_API':
         logger.info('Reading ECCC download commands')
-        get_eccc_api.download_from_eccc_api(cmd_dict,model)
-
+        get_eccc_api.download_from_eccc_api(cmd_dict,model) 
+         
     elif data_source == 'SNOTEL':
         logger.info('Reading SNOTEL download commands')
         download_threads = get_snotel.build_threads(cmd_dict,data_source)
         run_download_threads(download_threads)
+
+    elif data_source == 'ERA5':
+        logger.info('Reading ERA5 download commands')
+        get_era5.download_era5(cmd_dict)
+
+    elif data_source == 'ERA5_LAND':
+        logger.info('Reading ERA5 download commands')
+        get_era5.download_era5_land(cmd_dict)
+    
+    elif data_source == 'ECMWF_NWP':
+        logger.info('Reading ECMWF_NWP download commands')
+        download_threads, filenames = get_ecmwf_nwp.build_threads(cmd_dict,data_source, model)
+        run_download_threads(download_threads)
+        get_ecmwf_nwp.convert_grib_to_netcdf(cmd_dict, filenames, data_source, model)
+
     else:
         raise ValueError(f"Unknown data source: {data_source}")
+    
     
     logger.info(f'Download of data for {data_source} finished')
     if ds_dict['xml_log']: log2xml(ds_dict['log_file'],ds_dict['log_xml_file'])
@@ -181,12 +189,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     #Testing block - set arguments below to test the script
-    #NOTE: Be sure to comment again once complete testing!
-
-    #args.data_source = 'ECCC_NWP'
-    
-    # Model setting only needed for ECCC_NWP
-    #args.model = 'GDPS'
+    #args.data_source = 'ECMWF_NWP'
+    #args.model = 'IFS'
 
     # Call mainscript with the parsed arguments
     mainscript(args.run_info_file, args.data_source, args.use_default_settings, args.model)

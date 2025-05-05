@@ -136,3 +136,57 @@ def download_era5(cmd_dict, data_source='ERA5'):
 
 
     return
+
+
+def download_era5_land(cmd_dict, data_source='ERA5_LAND'):
+
+    #Read model independent settings
+    output_dir = cmd_dict['output_dir']
+    bounding_box = cmd_dict['bounding_box']
+
+    #Read command line list
+    num_days_back = cmd_dict[data_source]['num_days_back']
+    delay_days = cmd_dict[data_source]['delay_days']
+    variables = cmd_dict[data_source]['variables']
+    bounding_box = cmd_dict[data_source]['bbox']
+    #grid = cmd_dict[data_source]['grid']
+
+    coordinates,_,_ = round_coords_to_ERA5(bounding_box)
+
+    #Read settings file
+    hour_list = cmd_dict[data_source]['hours']
+
+    # Initialize the reference date (UTC+00)
+    ref_date = dt.datetime.utcnow()
+
+    # Calculate start and end dates
+    end_date = ref_date - dt.timedelta(days=delay_days)
+    start_date = end_date - dt.timedelta(days=num_days_back)
+
+    # Calculate the total number of days to download
+    total_download_days = num_days_back - delay_days
+
+    # Iterate over each day in the download period
+    for variable in variables:
+        for day_counter in range(total_download_days):
+
+            date = start_date + dt.timedelta(days=day_counter)
+
+            dataset = "reanalysis-era5-land"
+            request = {
+                "variable": [variable],
+                'year':date.year,
+                'month':date.month,
+                'day': [date.day],
+                'time': hour_list,
+                "format": "netcdf",
+                "download_format": "unarchived",
+                "area": coordinates
+            }
+
+            output_filename = f'era5_land_{variable}_'+date.strftime('%Y%m%d')+'.nc'
+            output_file = os.path.join(output_dir,output_filename)
+
+            client = cdsapi.Client()
+            client.retrieve(dataset, request, target=output_file)
+    if ds_dict['xml_log']: log2xml(ds_dict['log_file'],ds_dict['log_xml_file'])

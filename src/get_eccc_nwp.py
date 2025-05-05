@@ -58,6 +58,7 @@ def build_threads(cmd_dict, data_source = 'ECCC_NWP', model = None):
     logger.info(f'Threading enabled with maximum number of threads = {max_num_threads}')
 
     url_base = cmd_dict[data_source][model]['url_base']
+    url_detail = cmd_dict[data_source][model]['url_detail']
 
     #Create empty list for threads
     download_threads = list()
@@ -68,27 +69,23 @@ def build_threads(cmd_dict, data_source = 'ECCC_NWP', model = None):
         # Loop through all lead times
         for lead_time_str in lead_times:
             
-            if 'HRDPS' in model: filename = day_str + 'T' + hour_str +'Z_MSC_HRDPS_' + parameter + '_RLatLon0.0225_PT' + lead_time_str +'H.grib2'
-            
-            elif 'RDPS' in model:  filename = 'CMC_reg_' + parameter + '_ps10km_' + day_str + hour_str + '_P' + lead_time_str +'.grib2'
-            
-            elif 'GDPS' in model:  filename = 'CMC_glb_' + parameter + '_latlon.15x.15_' + day_str + hour_str + '_P' + lead_time_str +'.grib2'
-            
+            if 'HRDPS' in model: 
+                filename = day_str + 'T' + hour_str +'Z_MSC_HRDPS_' + parameter + '_RLatLon0.0225_PT' + lead_time_str +'H.grib2'
+            elif 'RDPS' in model:  
+                filename = 'CMC_reg_' + parameter + '_ps10km_' + day_str + hour_str + '_P' + lead_time_str +'.grib2'
+            elif 'GDPS' in model:
+                filename = 'CMC_glb_' + parameter + '_latlon.15x.15_' + day_str + hour_str + '_P' + lead_time_str +'.grib2'
             elif 'REPS' in model:
-                if parameter == "WIND_TGL_10m":
-                    filename = day_str + 'T' + hour_str +'Z_MSC_REPS_' + parameter + '_RLatLon0.09x0.09_PT' + lead_time_str +'H.grib2'
-                else:
-                    filename = day_str + 'T' + hour_str +'Z_MSC_REPS_' + parameter + '_RLatLon0.09x0.09_PT' + lead_time_str +'H.grib2'
+                filename = day_str + 'T' + hour_str +'Z_MSC_REPS_' + parameter + '_RLatLon0.09x0.09_PT' + lead_time_str +'H.grib2'
             elif 'GEPS' in model:
-                if parameter == "WIND_TGL_10m":
-                    filename = 'CMC_geps-prob_' + parameter + '_latlon0p5x0p5_' + day_str + hour_str + '_P' + lead_time_str + '_all-products.grib2'
-                else:
-                    filename = 'CMC_geps-raw_' + parameter + '_latlon0p5x0p5_' + day_str + hour_str + '_P' + lead_time_str + '_allmbrs.grib2'
+                filename = 'CMC_geps-raw_' + parameter + '_latlon0p5x0p5_' + day_str + hour_str + '_P' + lead_time_str + '_allmbrs.grib2'
             else:
                 raise ValueError(f"Unknown model: {model}")
 
-            url = url_base + hour_str + '/' + lead_time_str + '/' + filename
+            #url = url_base + hour_str + '/' + lead_time_str + '/' + filename
+            url = url_base + day_str + url_detail + hour_str + '/' + lead_time_str + '/' + filename
 
+            
             logger.debug('Preparing download for url [%s]' %url)
             download_threads.append(start_thread(url, output_dir, filename,threadLimiter,max_num_threads))
 
