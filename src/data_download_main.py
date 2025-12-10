@@ -26,6 +26,7 @@ import get_snodas
 import get_era5
 import get_ecmwf_nwp
 
+
 # Import local utility scripts
 from get_run_info_utils import read_cmd_line, add_run_info_to_cmd_dict, read_default_arguments
 from logging_utils import set_logger, log2xml
@@ -107,13 +108,13 @@ def download_data(data_source, cmd_dict, model=None):
     elif data_source == 'ERA5_LAND':
         logger.info('Reading ERA5 download commands')
         get_era5.download_era5_land(cmd_dict)
-    
+
     elif data_source == 'ECMWF_NWP':
         logger.info('Reading ECMWF_NWP download commands')
-        download_threads, filenames = get_ecmwf_nwp.build_threads(cmd_dict,data_source, model)
-        run_download_threads(download_threads)
+        download_threads, filenames = get_ecmwf_nwp.build_threads(cmd_dict, data_source, model)
+        for t in download_threads:
+            t.join()
         get_ecmwf_nwp.convert_grib_to_netcdf(cmd_dict, filenames, data_source, model)
-
     else:
         raise ValueError(f"Unknown data source: {data_source}")
     
@@ -189,8 +190,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     #Testing block - set arguments below to test the script
-    #args.data_source = 'ECMWF_NWP'
-    #args.model = 'IFS'
+    args.data_source = 'ECMWF_NWP'
+    args.model = 'IFS_ENS'
 
     # Call mainscript with the parsed arguments
     mainscript(args.run_info_file, args.data_source, args.use_default_settings, args.model)

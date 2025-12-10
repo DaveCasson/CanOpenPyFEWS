@@ -332,28 +332,143 @@ ERA5_LAND:
     - '23:00'
   
   
-ECMWF_NWP: 
-  IFS:
-    model: IFS
-    url_base: 'https://data.ecmwf.int/forecasts'
-    timestep: 3
-    interval: 12
-    lead_time: 72
-    delay: 36
-    first_lead_time: 0
-    parameters:
-      - "TPRATE"
-      - "TMP"
-  AIFS:
-    model: AIFS
-    url_base: 'https://data.ecmwf.int/forecasts'
-    timestep: 6
-    interval: 12
-    lead_time: 72
-    delay: 36
-    first_lead_time: 0
-    parameters:
-      - "TPRATE"
-      - "TMP"
+ECMWF_NWP:
+  IFS_DET:
+    # Which ECMWF model / stream to call
+    ecmwf_model: ifs        # ECMWF Integrated Forecast System
+    stream: oper            # 'oper' = high-res deterministic run
 
-wgrib2_path: '../wgrib2/wgrib2.exe'
+    # Control / ensemble behaviour
+    use_control: true       # download a control forecast
+    control_type: fc        # deterministic forecast type
+    control_number: null    # usually no 'number' for deterministic
+
+    ensemble_type: null     # no ensemble
+    ensemble_members: 0     # 0 => skip ensemble
+    ensemble_numbers: []    # (ignored when ensemble_members=0)
+
+    # Temporal configuration
+    delay: 6                # hours after init time before you trust it's complete
+    lead_time: 12          # max forecast lead time in hours
+    interval: 6             # model cycle interval (00/06/12/18)
+    timestep: 3             # output step (3-hourly)
+    first_lead_time: 0      # first lead (0h, or 3 if you want >0 only)
+
+    # Download options
+    url_base: ""            # unused by the new script
+    source: ecmwf             # 'aws', 'ecmwf', 'google', 'azure'
+
+    # GRIB parameters (shortName)
+    parameters:
+      - tp                  # total precipitation
+      - 2t                  # 2 m temperature
+
+    # Optional spatial clipping
+    clip_to_bbox: true
+    clip_bbox:
+      lon_min: -170.0
+      lon_max: -50.0
+      lat_min: 10.0
+      lat_max: 80.0
+      
+  IFS_ENS:
+    ecmwf_model: ifs        # IFS ensemble
+    stream: enfo            # 'enfo' = ensemble forecast
+
+    # Control forecast (ENS control)
+    use_control: true
+    control_type: cf        # ENS control forecast
+    control_number: null    # IFS ENS control usually not addressed via 'number' here
+
+    # Ensemble members
+    ensemble_type: pf       # perturbed members
+    ensemble_members: 50    # number of members you want
+    ensemble_numbers: []    # [] => uses 1..ensemble_members
+
+    delay: 6
+    lead_time: 12
+    interval: 6
+    timestep: 3
+    first_lead_time: 0
+
+    url_base: ""
+    source: aws
+
+    parameters:
+      - tp
+      - 2t
+
+    clip_to_bbox: true
+    clip_bbox:
+      lon_min: -170.0
+      lon_max: -50.0
+      lat_min: 10.0
+      lat_max: 80.0
+
+  AIFS_SINGLE:
+    ecmwf_model: aifs-single   # AIFS single-member model
+    stream: oper               # deterministic stream (check ECMWF docs)
+
+    use_control: true          # just one deterministic run
+    control_type: fc           # forecast
+    control_number: null
+
+    ensemble_type: null        # no ensemble
+    ensemble_members: 0
+    ensemble_numbers: []
+
+    delay: 6
+    lead_time: 12
+    interval: 6
+    timestep: 3
+    first_lead_time: 0
+
+    url_base: ""
+    source: aws
+
+    parameters:
+      - 2t
+
+    clip_to_bbox: true
+    clip_bbox:
+      lon_min: -170.0
+      lon_max: -50.0
+      lat_min: 10.0
+      lat_max: 80.0
+
+  AIFS_ENS:
+    ecmwf_model: aifs-ens     # AIFS ensemble model
+    stream: enfo              # ensemble stream
+
+    # AIFS ensemble often has no separate "cf" type; you can still
+    # treat one member as control if needed using control_number.
+    use_control: false        # set true if you want a dedicated control file
+    control_type: fc          # forecast (if you enable use_control)
+    control_number: 0         # or 1, depending on how AIFS numbers its control
+
+    # Ensemble members (AIFS ENS)
+    ensemble_type: fc         # ensemble members as type=fc, selected via 'number'
+    ensemble_members: 50      # request 50 members
+    ensemble_numbers: []      # [] => uses 1..ensemble_members
+
+    delay: 6
+    lead_time: 12
+    interval: 6
+    timestep: 3
+    first_lead_time: 0
+
+    url_base: ""
+    source: aws
+
+    parameters:
+      - 2t
+
+    clip_to_bbox: true
+    clip_bbox:
+      lon_min: -170.0
+      lon_max: -50.0
+      lat_min: 10.0
+      lat_max: 80.0
+
+
+wgrib2_path: '../bin/wgrib2.exe'
