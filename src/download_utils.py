@@ -11,6 +11,7 @@ import socket
 import logging
 import datetime as dt
 import certifi
+import ssl
 
 from download_settings import read_download_settings
 from logging_utils import log2xml
@@ -61,7 +62,9 @@ def data_download(url, outputDir, filename, threadLimiter, maximumNumberOfThread
             http = urllib3.PoolManager(timeout=60, retries=3,cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
             response = http.request('GET',url,preload_content=False,headers=headers)
         else:
-            http = urllib3.PoolManager(timeout=60, retries=3,maxsize=5)
+            ssl_ctx = ssl.create_default_context(cafile=certifi.where())
+            http = urllib3.PoolManager(timeout=60, retries=3,maxsize=5,ssl_context=ssl_ctx)
+            #http = urllib3.PoolManager(cert_reqs='CERT_NONE', assert_hostname=False)
             response = http.request('GET',url,preload_content=False)
 
         # Check if the response was successful
@@ -99,6 +102,6 @@ def data_download(url, outputDir, filename, threadLimiter, maximumNumberOfThread
         activeThreads = threading.active_count() - 1
         logger.debug(f'Maximum Number of Concurrent Threads Allowed = {maximumNumberOfThreads}, Number of Threads Active = {activeThreads}')
 
-    if ds_dict['xml_Log']: log2xml(ds_dict['log_file'],ds_dict['log_xml_file'])
+    if ds_dict['xml_log']: log2xml(ds_dict['log_file'],ds_dict['log_xml_file'])
 
     return

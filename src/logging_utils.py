@@ -41,7 +41,7 @@ def log2xml(logfile,xmldiag):
     trans = {'WARNING': '2', 'ERROR': '1', 'INFO': '3','DEBUG': '4'}
     if os.path.exists(logfile):
         ifile = open(logfile,"r")
-        ofile = open(xmldiag,"w")
+        ofile = open(xmldiag,"a")
         all = ifile.readlines()
 
         ofile.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")

@@ -31,6 +31,7 @@ def build_threads(cmd_dict,data_source='ECCC_PRECIP_GRID', model='RDPA'):
 
     #Read command line list
     url_base = cmd_dict[data_source][model]['url_base']
+    url_detail = cmd_dict[data_source][model]['url_detail']
     num_days_back = cmd_dict[data_source][model]['num_days_back']
     parameters = [cmd_dict[data_source][model]['parameters']]
 
@@ -52,18 +53,20 @@ def build_threads(cmd_dict,data_source='ECCC_PRECIP_GRID', model='RDPA'):
 
         ref_date = ref_date+dt.timedelta(days=1)
         day_str = ref_date.date().strftime("%Y%m%d")
-        
+       
         for hStr in hour_str_list:
             for parameter in parameters:
                 if model == "RDPA":
-                    filename = 'CMC_'+ model +'_APCP-006-0100cutoff' + parameter + '_ps10km_' + day_str + hStr + '_' + '000' +'.grib2'
+                    filename =  day_str + 'T' + hStr + 'Z_MSC_RDPA_APCP-Accum6h_Sfc_RLatLon0.09_PT0H.grib2'
+                    #filename = 'CMC_'+ model +'_APCP-006-0100cutoff' + parameter + '_ps10km_' + day_str + hStr + '_' + '000' +'.grib2'
                 elif model == "HRDPA":
-                    filename = 'CMC_' + model + '_APCP-006-0100cutoff' + parameter + '_ps2.5km_' + day_str + hStr + '_' + '000' + '.grib2'
-                url = url_base + '/' + filename
-                
+                    filename =  day_str + 'T' + hStr + 'Z_MSC_HRDPA_APCP-Accum6h_Sfc_RLatLon0.0225_PT0H.grib2'
+                    #filename = 'CMC_' + model + '_APCP-006-0100cutoff' + parameter + '_ps2.5km_' + day_str + hStr + '_' + '000' + '.grib2'
+                #url = url_base + '/' + hStr + '/' + filename
+                url = url_base + day_str + url_detail + hStr + '/' + filename
             logger.debug('Preparing download for url [%s]' %url)
             download_threads.append(start_thread(url, output_dir, filename,threadLimiter,max_num_threads))
 
-    if ds_dict['xml_log']: log2xml(ds_dict['log_file'],ds_dict['log_xml_file'])
+    #if ds_dict['xml_log']: log2xml(ds_dict['log_file'],ds_dict['log_xml_file'])
 
     return download_threads
