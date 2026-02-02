@@ -581,7 +581,6 @@ def _clip_dataset_to_bbox(ds, bbox):
     )
 
     return ds_clipped
-
 def convert_grib_to_netcdf(
     cmd_dict, filenames, data_source="ECMWF_NWP", model="IFS_ENS"
 ):
@@ -596,6 +595,8 @@ def convert_grib_to_netcdf(
     - Renames ensemble dimension from 'number' to 'ens' and tags:
          ens:_CoordinateAxisType = "Ensemble"
     - Adds a 'forecast_reference_time' coordinate based on the filename
+    - **NEW**: Promotes scalar valid_time/time to a proper 'time' dimension,
+      so FEWS can parse a time axis on the data variables.
     - Optionally clips to a user-specified bounding box if:
          clip_to_bbox: true
          clip_bbox: {lon_min, lon_max, lat_min, lat_max}
@@ -691,6 +692,78 @@ def convert_grib_to_netcdf(
                 e,
             )
 
+        # ------------------------------------------------------------------
+        # NEW: Promote scalar valid_time/time to a real 'time' dimension
+        # ------------------------------------------------------------------
+        try:
+            time_val = None
+
+            # Prefer valid_time if present (actual forecast valid time)
+            if "valid_time" in ds_sel.variables:
+                vt_var = ds_sel["valid_time"]
+                time_val = vt_var.values
+            elif "time" in ds_sel.variables:
+                t_var = ds_sel["time"]
+                time_val = t_var.values
+
+            if time_val is not None:
+                # If there is a scalar 'time' variable, drop it before promoting
+                if "time" in ds_sel.variables and "time" not in ds_sel.dims:
+                    ds_sel = ds_sel.drop_vars("time")
+
+                if "time" not in ds_sel.dims:
+                    # Create a time dimension of length 1 and broadcast vars
+                    ds_sel = ds_sel.expand_dims(time=[time_val])
+
+                    # Overwrite/create time coord explicitly (1D)
+                    ds_sel["time"] = ("time", [time_val])
+                    ds_sel["time"].attrs.update(
+                        {
+                            "standard_name": "time",
+                            "long_name": "valid time of forecast",
+                            # units will be handled by xarray CF encoding
+                        }
+                    )
+
+                # Optionally, tie valid_time to the time axis as well
+                if "valid_time" in ds_sel.variables and "time" in ds_sel.dims:
+                    # Make valid_time a 1D coord aligned with time
+                    vt = ds_sel["valid_time"]
+                    ds_sel = ds_sel.drop_vars("valid_time")
+                    ds_sel = ds_sel.assign_coords(
+                        valid_time=("time", [time_val])
+                    )
+                    ds_sel["valid_time"].attrs.update(vt.attrs)
+
+        except Exception as e:
+            logger.warning(
+                "Could not promote scalar time/valid_time to 'time' dimension for %s: %s",
+                filename,
+                e,
+            )
+
+        # ------------------------------------------------------------------
+        # NEW: Put dimensions in a consistent order: time, ens, lat, lon
+        # ------------------------------------------------------------------
+        try:
+            preferred = []
+            for dim in ("time", "ens", "latitude", "lat", "longitude", "lon"):
+                if dim in ds_sel.dims and dim not in preferred:
+                    preferred.append(dim)
+            # Add any remaining dims at the end
+            for dim in ds_sel.dims:
+                if dim not in preferred:
+                    preferred.append(dim)
+
+            if preferred and list(ds_sel.dims) != preferred:
+                ds_sel = ds_sel.transpose(*preferred)
+        except Exception as e:
+            logger.warning(
+                "Could not reorder dimensions for %s; keeping original order. Error: %s",
+                filename,
+                e,
+            )
+
         # Optional clipping to bounding box
         if clip_to_bbox and clip_bbox is not None:
             try:
@@ -716,4 +789,5 @@ def convert_grib_to_netcdf(
             print(f"Deleted {grib2_path}")
         except OSError as e:
             print(f"Error deleting {grib2_path}: {e}")
+
 
